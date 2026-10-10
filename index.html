@@ -72,21 +72,24 @@
             animation: shake 0.35s ease-in-out;
         }
 
-        /* スマートフォンの横画面ではグー・チョキ・パーを横一列に固定 */
-        @media (orientation: landscape) {
+        /* 画面の幅が高さ以上なら、グー・チョキ・パーを横一列にする */
+        @media (min-aspect-ratio: 1/1) {
             #battle-hand-buttons {
-                display: grid;
-                grid-template-columns: repeat(3, minmax(0, 1fr));
+                display: grid !important;
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                grid-auto-flow: column;
                 gap: 0.5rem;
+                width: 100%;
             }
             #battle-hand-buttons > button {
+                display: block;
                 width: 100%;
                 min-width: 0;
             }
         }
 
-        /* スマートフォンの横画面では取引情報を左右に並べる */
-        @media (orientation: landscape) and (max-height: 600px) {
+        /* 画面が横長で高さ600px以下なら、取引情報を左右に並べる */
+        @media (min-aspect-ratio: 1/1) and (max-height: 600px) {
             #trade-status-bar {
                 display: flex;
                 flex-direction: row;
@@ -119,8 +122,8 @@
             }
         }
 
-        /* 縦画面では取引情報を2段に分け、重なりを防ぐ */
-        @media (max-width: 600px) and (orientation: portrait) {
+        /* 画面の高さが幅より大きい場合は、取引情報を2段に分ける */
+        @media (max-aspect-ratio: 1/1) and (max-width: 600px) {
             #trade-status-bar {
                 display: flex;
                 flex-direction: column;

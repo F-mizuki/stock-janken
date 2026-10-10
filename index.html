@@ -72,6 +72,40 @@
             animation: shake 0.35s ease-in-out;
         }
 
+        /* 縦画面では取引情報を2段に分け、重なりを防ぐ */
+        @media (max-width: 600px) and (orientation: portrait) {
+            #trade-status-bar {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.4rem;
+                padding: 0.5rem;
+            }
+            #trade-status-bar > div {
+                width: 100%;
+                min-width: 0;
+                justify-content: space-between;
+                gap: 0.35rem;
+            }
+            #trade-status-bar > div:first-child {
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+            #trade-status-bar > div:last-child {
+                flex-wrap: wrap;
+            }
+            #trade-status-bar #volatility-alert {
+                white-space: normal;
+                flex: 1 1 auto;
+                text-align: center;
+                padding-left: 0.4rem;
+                padding-right: 0.4rem;
+            }
+            #trade-status-bar #stock-player-gold {
+                font-size: 0.9rem;
+            }
+        }
+
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 4px;
@@ -261,7 +295,7 @@
             </div>
 
             <!-- Trade Status -->
-            <div class="flex items-center justify-between gap-2 bg-slate-900/90 border border-slate-800 px-3 py-2 rounded-lg text-xs">
+            <div id="trade-status-bar" class="flex items-center justify-between gap-2 bg-slate-900/90 border border-slate-800 px-3 py-2 rounded-lg text-xs">
                 <div class="flex items-center gap-2 min-w-0">
                     <span id="stock-turn-badge" class="px-2 py-1 bg-cyan-500/20 text-cyan-400 font-orbitron font-bold rounded border border-cyan-500/40 text-xs whitespace-nowrap">
                         TURN 1 / 10

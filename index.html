@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>株式ジャンケン - Stock Janken</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #080b14;
+            color: #e2e8f0;
+            user-select: none;
+            overflow-x: hidden;
+        }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        /* Neon Glow Effects */
+        .neon-border-cyan {
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.4), inset 0 0 10px rgba(0, 243, 255, 0.2);
+            border: 1px solid #00f3ff;
+        }
+        .neon-border-pink {
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.4), inset 0 0 10px rgba(255, 0, 127, 0.2);
+            border: 1px solid #ff007f;
+        }
+        .neon-border-yellow {
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.4), inset 0 0 10px rgba(255, 215, 0, 0.2);
+            border: 1px solid #ffd700;
+        }
+        .neon-text-cyan {
+            text-shadow: 0 0 8px rgba(0, 243, 255, 0.8);
+            color: #00f3ff;
+        }
+        .neon-text-pink {
+            text-shadow: 0 0 8px rgba(255, 0, 127, 0.8);
+            color: #ff007f;
+        }
+        .neon-text-yellow {
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+            color: #ffd700;
+        }
+        
+        /* Card & Button Styles */
+        .cyber-card {
+            background: linear-gradient(135deg, rgba(19, 26, 45, 0.85) 0%, rgba(10, 14, 26, 0.95) 100%);
+            border-radius: 10px;
+        }
+        .cyber-btn {
+            position: relative;
+            transition: all 0.2s ease;
+            overflow: hidden;
+        }
+        .cyber-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.2);
+        }
+        .cyber-btn:active {
+            transform: translateY(1px);
+        }
+
+        /* Screen Shake Animation for Battle Hits */
+        @keyframes shake {
+            0%, 100% { transform: translate(0, 0); }
+            10%, 30%, 50%, 70%, 90% { transform: translate(-6px, 3px); }
+            20%, 40%, 60%, 80% { transform: translate(6px, -3px); }
+        }
+        .animate-shake {
+            animation: shake 0.35s ease-in-out;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-1.5 sm:p-3">
+
+    <!-- Header Navigation / Status (Compact Height) -->
+    <header class="w-full max-w-4xl mx-auto flex items-center justify-between p-2 mb-1.5 cyber-card border border-slate-800 shadow-md">
+        <div class="flex items-center space-x-2">
+            <span class="text-xl sm:text-2xl">📈</span>
+            <div>
+                <h1 class="text-base sm:text-lg font-black font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-pink-500 to-yellow-400">
+                    STOCK JANKEN
+                </h1>
+            </div>
+        </div>
+        <div id="header-status" class="flex items-center space-x-2 text-xs font-semibold">
+            <!-- Dynamic Status Badge -->
+        </div>
+        <button id="btn-sound-toggle" onclick="toggleSound()" class="py-1 px-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition-colors">
+            🔊 音声: ON
+        </button>
+    </header>
+
+    <!-- Main Container -->
+    <main id="app-container" class="w-full max-w-4xl mx-auto flex-1 flex flex-col justify-center my-auto">
+
+        <!-- 1. MODE SELECT SCREEN -->
+        <section id="screen-mode-select" class="cyber-card p-5 sm:p-8 text-center max-w-lg mx-auto w-full neon-border-cyan my-auto shadow-2xl">
+            <div class="mb-5">
+                <span class="text-5xl inline-block mb-2 animate-bounce">✊✌️✋</span>
+                <h2 class="text-2xl font-black font-orbitron text-cyan-400 mb-1">STOCK JANKEN</h2>
+                <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                    株価を読んで「グー・チョキ・パー」を買い込め！<br>
+                    集めたの手がそのまま<span class="text-pink-400 font-bold">攻撃力</span>となり、最後のバトルを制する！
+                </p>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="startGame('vs_cpu')" class="w-full py-3 px-5 rounded-xl font-bold text-base bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 shadow-lg shadow-cyan-500/20 cyber-btn flex items-center justify-center space-x-2">
+                    <span>🤖 1人プレイ (VS CPU)</span>
+                </button>
+                <button onclick="startGame('vs_p2')" class="w-full py-3 px-5 rounded-xl font-bold text-base bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white shadow-lg shadow-pink-500/20 cyber-btn flex items-center justify-center space-x-2">
+                    <span>⚔️ 2人プレイ (ローカル対戦)</span>
+                </button>
+            </div>
+
+            <div class="mt-6 text-left bg-slate-900/80 p-3 rounded-lg border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                <p class="font-bold text-slate-200 mb-0.5">💡 ルール概要:</p>
+                <p>・<span class="text-yellow-400">株フェーズ（10ターン）</span>: 初期100G。1ターンに各手最大3個購入可。売却上限なし。</p>
+                <p>・<span class="text-yellow-400">後半（6〜10ターン）</span>: 価格変動が <span class="text-red-400 font-bold">1〜100G</span> に激化！</p>
+                <p>・<span class="text-pink-400">戦闘フェーズ</span>: 各手の所持数＝攻撃力。勝ちで攻撃、あいこは低攻撃力から順に攻撃！</p>
+            </div>
+        </section>
+
+        <!-- 2. PASS TURN INTERSTITIAL -->
+        <section id="screen-pass-turn" class="hidden cyber-card p-6 text-center max-w-md mx-auto w-full neon-border-yellow my-auto">
+            <div class="text-4xl mb-3">📱 ➔ 👤</div>
+            <h2 id="pass-turn-title" class="text-xl font-black text-yellow-400 mb-1">PLAYER 2 の順番です</h2>
+            <p id="pass-turn-desc" class="text-slate-300 text-xs mb-5">画面を他プレイヤーに見られないように交代してください。</p>
+            <button onclick="proceedAfterPass()" class="w-full py-3 px-5 rounded-xl font-bold text-base bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-slate-950 cyber-btn shadow-lg shadow-yellow-500/20">
+                準備完了（画面を表示）
+            </button>
+        </section>
+
+        <!-- 3. STOCK PHASE SCREEN (Compact) -->
+        <section id="screen-stock-phase" class="hidden flex-1 flex flex-col gap-2">
+            
+
+            <!-- Chart Panel (Height Compacted to 110px) -->
+            <div class="cyber-card p-2 border border-slate-800">
+                <div class="flex justify-between items-center mb-1 text-[11px]">
+                    <span class="font-bold text-slate-400 flex items-center gap-1">📊 株価推移</span>
+                    <div class="flex space-x-3 font-bold">
+                        <span class="text-cyan-400">✊ グー</span>
+                        <span class="text-pink-400">✌️ チョキ</span>
+                        <span class="text-yellow-400">✋ パー</span>
+                    </div>
+                </div>
+                <div class="w-full h-24 sm:h-28 bg-slate-950/80 rounded p-1 border border-slate-800/80 relative">
+                    <canvas id="stock-chart" class="w-full h-full"></canvas>
+                </div>
+            </div>
+
+            <!-- Stock Trading Cards (Compact Grid) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                
+                <!-- ROCK CARD -->
+                <div class="cyber-card p-2.5 border border-cyan-500/30 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <div class="flex items-center space-x-1.5">
+                                <span class="text-xl">✊</span>
+                                <span class="font-bold text-cyan-400 text-xs">グー株</span>
+                            </div>
+                            <div class="text-right">
+                                <span id="price-rock" class="text-base font-black font-orbitron text-cyan-300">-- G</span>
+                                <span id="diff-rock" class="text-[10px] font-bold ml-1">--</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between bg-slate-950/60 p-1.5 rounded my-1.5 text-[11px] border border-slate-800">
+                            <div><span class="text-slate-400">所持:</span> <span id="owned-rock" class="font-bold text-white">0</span></div>
+                            <div><span class="text-slate-400">今期購入:</span> <span id="bought-rock" class="font-bold text-cyan-400">0/3</span></div>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex gap-1.5">
+                            <button onclick="tradeStock('rock', -1)" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-red-400 font-bold rounded border border-slate-700 text-sm cyber-btn">売る(-1)</button>
+                            <button onclick="tradeStock('rock', 1)" class="flex-1 py-2 bg-cyan-600/30 hover:bg-cyan-600/50 text-cyan-300 font-bold rounded border border-cyan-500/50 text-sm cyber-btn">買う(+1)</button>
+                        </div>
+                        <div class="flex gap-1 text-[10px]">
+                            <button onclick="sellAllStock('rock')" class="flex-1 py-0.5 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-800">全売却</button>
+                            <button onclick="buyMaxStock('rock')" class="flex-1 py-0.5 bg-slate-900 hover:bg-slate-800 text-cyan-400 rounded border border-slate-800">買える上限</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SCISSORS CARD -->
+                <div class="cyber-card p-2.5 border border-pink-500/30 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <div class="flex items-center space-x-1.5">
+                                <span class="text-xl">✌️</span>
+                                <span class="font-bold text-pink-400 text-xs">チョキ株</span>
+                            </div>
+                            <div class="text-right">
+                                <span id="price-scissors" class="text-base font-black font-orbitron text-pink-300">-- G</span>
+                                <span id="diff-scissors" class="text-[10px] font-bold ml-1">--</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between bg-slate-950/60 p-1.5 rounded my-1.5 text-[11px] border border-slate-800">
+                            <div><span class="text-slate-400">所持:</span> <span id="owned-scissors" class="font-bold text-white">0</span></div>
+                            <div><span class="text-slate-400">今期購入:</span> <span id="bought-scissors" class="font-bold text-pink-400">0/3</span></div>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex gap-1.5">
+                            <button onclick="tradeStock('scissors', -1)" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-red-400 font-bold rounded border border-slate-700 text-sm cyber-btn">売る(-1)</button>
+                            <button onclick="tradeStock('scissors', 1)" class="flex-1 py-2 bg-pink-600/30 hover:bg-pink-600/50 text-pink-300 font-bold rounded border border-pink-500/50 text-sm cyber-btn">買う(+1)</button>
+                        </div>
+                        <div class="flex gap-1 text-[10px]">
+                            <button onclick="sellAllStock('scissors')" class="flex-1 py-0.5 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-800">全売却</button>
+                            <button onclick="buyMaxStock('scissors')" class="flex-1 py-0.5 bg-slate-900 hover:bg-slate-800 text-pink-400 rounded border border-slate-800">買える上限</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PAPER CARD -->
+                <div class="cyber-card p-2.5 border border-yellow-500/30 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <div class="flex items-center space-x-1.5">
+                                <span class="text-xl">✋</span>
+                                <span class="font-bold text-yellow-400 text-xs">パー株</span>
+                            </div>
+                            <div class="text-right">
+                                <span id="price-paper" class="text-base font-black font-orbitron text-yellow-300">-- G</span>
+                                <span id="diff-paper" class="text-[10px] font-bold ml-1">--</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between bg-slate-950/60 p-1.5 rounded my-1.5 text-[11px] border border-slate-800">
+                            <div><span class="text-slate-400">所持:</span> <span id="owned-paper" class="font-bold text-white">0</span></div>
+                            <div><span class="text-slate-400">今期購入:</span> <span id="bought-paper" class="font-bold text-yellow-400">0/3</span></div>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex gap-1.5">
+                            <button onclick="tradeStock('paper', -1)" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-red-400 font-bold rounded border border-slate-700 text-sm cyber-btn">売る(-1)</button>
+                            <button onclick="tradeStock('paper', 1)" class="flex-1 py-2 bg-yellow-600/30 hover:bg-yellow-600/50 text-yellow-300 font-bold rounded border border-yellow-500/50 text-sm cyber-btn">買う(+1)</button>
+                        </div>
+                        <div class="flex gap-1 text-[10px]">
+                            <button onclick="sellAllStock('paper')" class="flex-1 py-0.5 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded border border-slate-800">全売却</button>
+                            <button onclick="buyMaxStock('paper')" class="flex-1 py-0.5 bg-slate-900 hover:bg-slate-800 text-yellow-400 rounded border border-slate-800">買える上限</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Trade Status -->
+            <div class="flex items-center justify-between gap-2 bg-slate-900/90 border border-slate-800 px-3 py-2 rounded-lg text-xs">
+                <div class="flex items-center gap-2 min-w-0">
+                    <span id="stock-turn-badge" class="px-2 py-1 bg-cyan-500/20 text-cyan-400 font-orbitron font-bold rounded border border-cyan-500/40 text-xs whitespace-nowrap">
+                        TURN 1 / 10
+                    </span>
+
+                    <span id="active-player-badge" class="px-2 py-1 bg-pink-500/20 text-pink-400 font-bold rounded border border-pink-500/40 text-xs whitespace-nowrap">
+                        PLAYER 1 の取引
+                    </span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span id="volatility-alert" class="text-[11px] font-bold text-slate-400 px-2 py-1 bg-slate-950 rounded border border-slate-700 whitespace-nowrap">
+                        通常変動 (1-50G)
+                    </span>
+
+                    <div class="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-lg border border-yellow-500/30 whitespace-nowrap">
+                        <span class="text-[11px] text-slate-400">所持金:</span>
+                        <span id="stock-player-gold" class="text-base font-black font-orbitron text-yellow-400">100 G</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trade Confirm Bar -->
+            <div class="mt-1 text-center">
+                <button id="btn-confirm-trade" onclick="confirmTurnTrade()" class="w-full py-2.5 px-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-sm rounded-lg shadow-md shadow-emerald-500/20 cyber-btn">
+                    取引確定 ➔ 次のステップへ
+                </button>
+            </div>
+        </section>
+
+        <!-- 4. BATTLE PHASE SCREEN (Compact Layout) -->
+        <section id="screen-battle-phase" class="hidden flex-1 flex flex-col justify-between gap-2">
+            
+            <!-- Health Bars & Status Arena -->
+            <div class="grid grid-cols-2 gap-2">
+                
+                <!-- Player 1 HP Card -->
+                <div id="p1-battle-card" class="cyber-card p-2 border border-cyan-500/50 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-0.5">
+                            <span id="b-p1-name" class="font-bold text-cyan-400 text-xs">PLAYER 1</span>
+                            <span id="b-p1-hp-text" class="font-orbitron font-black text-cyan-300 text-xs">HP: 50/50</span>
+                        </div>
+                        <div class="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-800">
+                            <div id="b-p1-hp-bar" class="h-full bg-gradient-to-r from-cyan-500 to-emerald-400 rounded-full transition-all duration-300" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1 mt-1.5 text-center text-[10px] bg-slate-950/70 p-1 rounded border border-slate-800">
+                        <div><span class="text-cyan-400">✊</span> <span id="b-p1-atk-rock" class="font-bold">0</span></div>
+                        <div><span class="text-pink-400">✌️</span> <span id="b-p1-atk-scissors" class="font-bold">0</span></div>
+                        <div><span class="text-yellow-400">✋</span> <span id="b-p1-atk-paper" class="font-bold">0</span></div>
+                    </div>
+                </div>
+
+                <!-- Player 2 HP Card -->
+                <div id="p2-battle-card" class="cyber-card p-2 border border-pink-500/50 flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-0.5">
+                            <span id="b-p2-name" class="font-bold text-pink-400 text-xs">PLAYER 2</span>
+                            <span id="b-p2-hp-text" class="font-orbitron font-black text-pink-300 text-xs">HP: 50/50</span>
+                        </div>
+                        <div class="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden p-0.5 border border-slate-800">
+                            <div id="b-p2-hp-bar" class="h-full bg-gradient-to-r from-pink-500 to-rose-400 rounded-full transition-all duration-300" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1 mt-1.5 text-center text-[10px] bg-slate-950/70 p-1 rounded border border-slate-800">
+                        <div><span class="text-cyan-400">✊</span> <span id="b-p2-atk-rock" class="font-bold">0</span></div>
+                        <div><span class="text-pink-400">✌️</span> <span id="b-p2-atk-scissors" class="font-bold">0</span></div>
+                        <div><span class="text-yellow-400">✋</span> <span id="b-p2-atk-paper" class="font-bold">0</span></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Central Clash Stage -->
+            <div id="battle-stage" class="cyber-card p-3 min-h-[130px] flex flex-col items-center justify-center relative border border-slate-800 neon-border-cyan overflow-hidden">
+                
+                <div id="battle-round-title" class="text-[10px] font-bold font-orbitron text-slate-400 uppercase tracking-widest mb-1">
+                    ROUND 1 - 手を選択してください
+                </div>
+
+                <div class="flex items-center justify-center space-x-6 sm:space-x-10 my-1 w-full">
+                    
+                    <!-- P1 Hand Box -->
+                    <div class="flex flex-col items-center">
+                        <div id="hand-display-p1" class="w-16 h-20 sm:w-20 sm:h-24 bg-slate-950 border-2 border-cyan-500/60 rounded-lg flex items-center justify-center text-3xl sm:text-4xl shadow-lg">
+                            ❓
+                        </div>
+                        <span id="hand-label-p1" class="text-[10px] font-bold text-cyan-400 mt-1">P1 選択中</span>
+                    </div>
+
+                    <!-- VS Symbol -->
+                    <div class="flex flex-col items-center">
+                        <span id="vs-badge" class="text-xl sm:text-3xl font-black font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-500 animate-pulse">
+                            VS
+                        </span>
+                    </div>
+
+                    <!-- P2 Hand Box -->
+                    <div class="flex flex-col items-center">
+                        <div id="hand-display-p2" class="w-16 h-20 sm:w-20 sm:h-24 bg-slate-950 border-2 border-pink-500/60 rounded-lg flex items-center justify-center text-3xl sm:text-4xl shadow-lg">
+                            ❓
+                        </div>
+                        <span id="hand-label-p2" class="text-[10px] font-bold text-pink-400 mt-1">P2 選択中</span>
+                    </div>
+
+                </div>
+
+                <div id="battle-result-msg" class="text-xs sm:text-sm font-bold text-yellow-300 text-center min-h-[20px] mt-0.5">
+                    手を決定してください
+                </div>
+            </div>
+
+            <!-- Action Input Area -->
+            <div id="battle-controls" class="cyber-card p-2 sm:p-2.5 border border-slate-800">
+                <div class="text-center mb-1.5">
+                    <span id="battle-input-prompt" class="text-xs font-bold text-cyan-300">
+                        PLAYER 1: 出す手を選択してください
+                    </span>
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <!-- ROCK BUTTON -->
+                    <button onclick="selectBattleHand('rock')" class="py-2 px-1 rounded-lg bg-slate-900 hover:bg-slate-800 border-2 border-cyan-500/50 hover:border-cyan-400 text-center cyber-btn group">
+                        <div class="text-2xl sm:text-3xl group-hover:scale-110 transition-transform">✊</div>
+                        <div class="font-bold text-cyan-400 text-xs">グー</div>
+                        <div class="text-[10px] text-slate-400">攻: <span id="btn-atk-rock" class="font-bold text-white">0</span></div>
+                    </button>
+
+                    <!-- SCISSORS BUTTON -->
+                    <button onclick="selectBattleHand('scissors')" class="py-2 px-1 rounded-lg bg-slate-900 hover:bg-slate-800 border-2 border-pink-500/50 hover:border-pink-400 text-center cyber-btn group">
+                        <div class="text-2xl sm:text-3xl group-hover:scale-110 transition-transform">✌️</div>
+                        <div class="font-bold text-pink-400 text-xs">チョキ</div>
+                        <div class="text-[10px] text-slate-400">攻: <span id="btn-atk-scissors" class="font-bold text-white">0</span></div>
+                    </button>
+
+                    <!-- PAPER BUTTON -->
+                    <button onclick="selectBattleHand('paper')" class="py-2 px-1 rounded-lg bg-slate-900 hover:bg-slate-800 border-2 border-yellow-500/50 hover:border-yellow-400 text-center cyber-btn group">
+                        <div class="text-2xl sm:text-3xl group-hover:scale-110 transition-transform">✋</div>
+                        <div class="font-bold text-yellow-400 text-xs">パー</div>
+                        <div class="text-[10px] text-slate-400">攻: <span id="btn-atk-paper" class="font-bold text-white">0</span></div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Combat Log (Compact) -->
+            <div class="bg-slate-950 p-1.5 rounded-lg border border-slate-800 text-[10px] h-14 overflow-y-auto space-y-0.5 font-mono text-slate-400" id="combat-log">
+                <p class="text-slate-500">戦闘ログ準備完了...</p>
+            </div>
+        </section>
+
+        <!-- 5. GAME OVER / RESULT SCREEN (With Rematch Option) -->
+        <section id="screen-game-over" class="hidden cyber-card p-5 sm:p-8 text-center max-w-md mx-auto w-full my-auto neon-border-cyan">
+            <div class="mb-3">
+                <span id="winner-trophy" class="text-5xl inline-block mb-1">🏆</span>
+                <h2 id="winner-title" class="text-2xl font-black font-orbitron text-yellow-400">VICTORY!</h2>
+                <p id="winner-subtitle" class="text-slate-300 text-xs mt-0.5">PLAYER 1 の勝利！</p>
+            </div>
+
+            <!-- Stats Summary -->
+            <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 my-4 text-xs space-y-1.5 text-left">
+                <div class="flex justify-between border-b border-slate-800 pb-1.5 font-bold text-slate-200">
+                    <span>対戦結果</span>
+                    <span id="result-round-count">0 ラウンド</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 pt-0.5">
+                    <div>
+                        <p class="font-bold text-cyan-400" id="res-p1-name">P1</p>
+                        <p class="text-slate-400">残HP: <span id="res-p1-hp" class="text-white font-bold">0</span></p>
+                    </div>
+                    <div>
+                        <p class="font-bold text-pink-400" id="res-p2-name">P2</p>
+                        <p class="text-slate-400">残HP: <span id="res-p2-hp" class="text-white font-bold">0</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <button onclick="rematch()" class="w-full py-3 px-5 rounded-xl font-bold text-base bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 cyber-btn shadow-lg shadow-emerald-500/20">
+                    🔄 再戦する (同じモード)
+                </button>
+                <button onclick="resetToTitle()" class="w-full py-2.5 px-5 rounded-xl font-bold text-sm bg-slate-800 hover:bg-slate-700 text-slate-300 cyber-btn border border-slate-700">
+                    🏠 タイトルへ戻る
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        /* ===================================================================
+         * WEB AUDIO API SOUND SYNTHESIZER
+         * =================================================================== */
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('btn-sound-toggle');
+            btn.innerText = soundEnabled ? '🔊 音声: ON' : '🔇 音声: OFF';
+            if (soundEnabled) playSound('click');
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'click') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(400, now + 0.05);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } 
+            else if (type === 'buy') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.06); // E5
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            } 
+            else if (type === 'sell') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(659.25, now); // E5
+                osc.frequency.setValueAtTime(523.25, now + 0.06); // C5
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            }
+            else if (type === 'turn') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.2);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
+            else if (type === 'janken') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.setValueAtTime(600, now + 0.08);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.18);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.18);
+            }
+            else if (type === 'hit') {
+                // Noise buffer for impact
+                const bufferSize = audioCtx.sampleRate * 0.15;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(1000, now);
+                filter.frequency.linearRampToValueAtTime(100, now + 0.15);
+
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+                noise.start(now);
+            }
+            else if (type === 'win') {
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C E G C
+                notes.forEach((freq, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + i * 0.1);
+                    gain.gain.setValueAtTime(0.2, now + i * 0.1);
+                    gain.gain.linearRampToValueAtTime(0.01, now + i * 0.1 + 0.25);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + i * 0.1);
+                    osc.stop(now + i * 0.1 + 0.25);
+                });
+            }
+        }
+
+        /* ===================================================================
+         * GAME STATE MANAGEMENT
+         * =================================================================== */
+        let gameMode = 'vs_cpu'; // 'vs_cpu' | 'vs_p2'
+        let currentPhase = 'mode_select'; // 'mode_select' | 'stock' | 'pass_turn' | 'battle' | 'game_over'
+        
+        let stockTurn = 1; // 1 to 10
+        let activePlayerIndex = 0; // 0 for P1, 1 for P2
+        let pendingPassAction = null; // Callback after passing turn UI
+
+        // Stock prices history
+        let currentPrices = { rock: 0, scissors: 0, paper: 0 };
+        let prevPrices = { rock: 0, scissors: 0, paper: 0 };
+        let priceHistory = []; // Array of { turn, rock, scissors, paper }
+
+        // Player structures
+        let players = [
+            {
+                name: 'PLAYER 1',
+                gold: 100,
+                stocks: { rock: 0, scissors: 0, paper: 0 },
+                buysThisTurn: { rock: 0, scissors: 0, paper: 0 },
+                hp: 50,
+                maxHp: 50,
+                selectedBattleHand: null
+            },
+            {
+                name: 'PLAYER 2',
+                gold: 100,
+                stocks: { rock: 0, scissors: 0, paper: 0 },
+                buysThisTurn: { rock: 0, scissors: 0, paper: 0 },
+                hp: 50,
+                maxHp: 50,
+                selectedBattleHand: null
+            }
+        ];
+
+        let battleRound = 1;
+        let isBattleAnimating = false;
+
+        /* ===================================================================
+         * CORE FLOW FUNCTIONS
+         * =================================================================== */
+        function startGame(mode) {
+            playSound('click');
+            gameMode = mode;
+            stockTurn = 1;
+            activePlayerIndex = 0;
+            priceHistory = [];
+            battleRound = 1;
+            isBattleAnimating = false;
+
+            // Reset Players completely
+            players[0] = {
+                name: 'PLAYER 1',
+                gold: 100,
+                stocks: { rock: 0, scissors: 0, paper: 0 },
+                buysThisTurn: { rock: 0, scissors: 0, paper: 0 },
+                hp: 50,
+                maxHp: 50,
+                selectedBattleHand: null
+            };
+            players[1] = {
+                name: gameMode === 'vs_cpu' ? 'CPU' : 'PLAYER 2',
+                gold: 100,
+                stocks: { rock: 0, scissors: 0, paper: 0 },
+                buysThisTurn: { rock: 0, scissors: 0, paper: 0 },
+                hp: 50,
+                maxHp: 50,
+                selectedBattleHand: null
+            };
+
+            // Reset Battle Display
+            const hDisplay1 = document.getElementById('hand-display-p1');
+            const hDisplay2 = document.getElementById('hand-display-p2');
+            const resultMsg = document.getElementById('battle-result-msg');
+            if (hDisplay1) hDisplay1.innerText = '❓';
+            if (hDisplay2) hDisplay2.innerText = '❓';
+            if (resultMsg) resultMsg.innerText = '手を選択してください';
+
+            // Generate First Prices
+            generatePricesForTurn();
+
+            showScreen('screen-stock-phase');
+            updateStockUI(true);
+        }
+
+        function rematch() {
+            startGame(gameMode);
+        }
+
+        function showScreen(screenId) {
+            const screens = ['screen-mode-select', 'screen-pass-turn', 'screen-stock-phase', 'screen-battle-phase', 'screen-game-over'];
+            screens.forEach(s => {
+                document.getElementById(s).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+
+            // Update Header Status Badge
+            const headerStatus = document.getElementById('header-status');
+            if (screenId === 'screen-stock-phase') {
+                headerStatus.innerHTML = `<span class="px-3 py-1 bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 rounded-full font-bold">株取引フェーズ</span>`;
+            } else if (screenId === 'screen-battle-phase') {
+                headerStatus.innerHTML = `<span class="px-3 py-1 bg-pink-500/20 text-pink-400 border border-pink-500/40 rounded-full font-bold">戦闘フェーズ</span>`;
+            } else {
+                headerStatus.innerHTML = '';
+            }
+        }
+
+        /* ===================================================================
+         * STOCK PHASE LOGIC
+         * =================================================================== */
+        function generatePricesForTurn() {
+            prevPrices = { ...currentPrices };
+            const maxPrice = stockTurn <= 5 ? 50 : 100;
+            const minPrice = 1;
+
+            currentPrices = {
+                rock: Math.floor(Math.random() * (maxPrice - minPrice + 1)) + minPrice,
+                scissors: Math.floor(Math.random() * (maxPrice - minPrice + 1)) + minPrice,
+                paper: Math.floor(Math.random() * (maxPrice - minPrice + 1)) + minPrice
+            };
+
+            priceHistory.push({
+                turn: stockTurn,
+                rock: currentPrices.rock,
+                scissors: currentPrices.scissors,
+                paper: currentPrices.paper
+            });
+        }
+
+        function tradeStock(type, delta) {
+            const player = players[activePlayerIndex];
+            const price = currentPrices[type];
+
+            if (delta > 0) {
+                // BUYing
+                if (player.buysThisTurn[type] + delta > 3) {
+                    return; // Exceeds 3 per turn limit
+                }
+                if (player.gold < price * delta) {
+                    return; // Not enough gold
+                }
+                player.gold -= price * delta;
+                player.stocks[type] += delta;
+                player.buysThisTurn[type] += delta;
+                playSound('buy');
+            } else if (delta < 0) {
+                // SELLing
+                const qty = Math.abs(delta);
+                if (player.stocks[type] < qty) {
+                    return; // Not enough stock
+                }
+                player.stocks[type] -= qty;
+                player.gold += price * qty;
+                playSound('sell');
+            }
+
+            // 株の売買だけでは株価・グラフは変わらないため、グラフは再描画しない。
+            updateStockUI(false);
+        }
+
+        function sellAllStock(type) {
+            const player = players[activePlayerIndex];
+            if (player.stocks[type] > 0) {
+                tradeStock(type, -player.stocks[type]);
+            }
+        }
+
+        function buyMaxStock(type) {
+            const player = players[activePlayerIndex];
+            const price = currentPrices[type];
+            const canBuyTurn = 3 - player.buysThisTurn[type];
+            const canAfford = Math.floor(player.gold / price);
+            const toBuy = Math.min(canBuyTurn, canAfford);
+
+            if (toBuy > 0) {
+                tradeStock(type, toBuy);
+            }
+        }
+
+        function confirmTurnTrade() {
+            playSound('turn');
+            const player = players[activePlayerIndex];
+            // Reset buy counters for player
+            player.buysThisTurn = { rock: 0, scissors: 0, paper: 0 };
+
+            if (gameMode === 'vs_cpu') {
+                // Execute CPU turn automatically
+                executeCpuStockTurn();
+                advanceStockTurn();
+            } else {
+                // 2P Mode: Pass to P2 or advance turn
+                if (activePlayerIndex === 0) {
+                    activePlayerIndex = 1;
+                    showPassTurnScreen('PLAYER 2 のターン', '画面をP2に渡してください。', () => {
+                        showScreen('screen-stock-phase');
+                        updateStockUI(true);
+                    });
+                } else {
+                    activePlayerIndex = 0;
+                    advanceStockTurn();
+                }
+            }
+        }
+
+        function executeCpuStockTurn() {
+            const cpu = players[1];
+            cpu.buysThisTurn = { rock: 0, scissors: 0, paper: 0 };
+            const maxPrice = stockTurn <= 5 ? 50 : 100;
+            const avgPrice = maxPrice / 2;
+            const hands = ['rock', 'scissors', 'paper'];
+
+            // --- STEP 1: SMART SELLING ---
+            hands.forEach(t => {
+                const price = currentPrices[t];
+                const count = cpu.stocks[t];
+                if (count > 0) {
+                    let sellQty = 0;
+                    if (stockTurn <= 7) {
+                        // Sell if price is very high relative to average
+                        if (price >= avgPrice * 1.35) {
+                            // Keep at least 1 unit unless price is extremely high
+                            sellQty = (price >= avgPrice * 1.7) ? count : Math.max(0, count - 1);
+                        }
+                    } else {
+                        // Turns 8-10 (Endgame): Avoid selling unless price is huge AND we can re-buy cheap hands
+                        const cheapestPrice = Math.min(...hands.map(h => currentPrices[h]));
+                        if (price >= cheapestPrice * 2.2 && count > 1) {
+                            sellQty = count - 1; // Keep at least 1 unit
+                        }
+                    }
+
+                    if (sellQty > 0) {
+                        cpu.stocks[t] -= sellQty;
+                        cpu.gold += price * sellQty;
+                    }
+                }
+            });
+
+            // --- STEP 2: SMART & BALANCED BUYING ---
+            // Loop until CPU cannot or should not buy anymore
+            let loopGuard = 0;
+            while (loopGuard < 20) {
+                loopGuard++;
+
+                // Filter buyable options (must have gold and < 3 buys this turn)
+                let buyable = hands.filter(h => cpu.buysThisTurn[h] < 3 && cpu.gold >= currentPrices[h]);
+                if (buyable.length === 0) break;
+
+                // Calculate score for each buyable hand
+                let scored = buyable.map(h => {
+                    const price = currentPrices[h];
+                    const currentStock = cpu.stocks[h];
+
+                    // Value score: lower price is better
+                    let score = (maxPrice - price) * 2;
+
+                    // ZERO-STOCK / DIVERSITY BONUS:
+                    // Crucial requirement: Heavily prioritize hands that are currently 0!
+                    if (currentStock === 0) {
+                        score += 200; // Top priority to ensure all hands have attack power
+                    } else if (currentStock === 1) {
+                        score += 50;
+                    } else {
+                        // Penalize stacking too many on one hand if others are low
+                        const minStock = Math.min(...hands.map(k => cpu.stocks[k]));
+                        if (currentStock > minStock + 3) {
+                            score -= 40;
+                        }
+                    }
+
+                    // LATE TURN URGENCY BONUS (Turns 8-10):
+                    // Gold is worthless in battle phase! Convert ALL remaining gold to stock units!
+                    if (stockTurn >= 8) {
+                        score += 100;
+                    }
+
+                    return { hand: h, price, score };
+                });
+
+                // Sort by score descending
+                scored.sort((a, b) => b.score - a.score);
+
+                // Buy 1 unit of top scored hand
+                const choice = scored[0];
+                cpu.gold -= choice.price;
+                cpu.stocks[choice.hand] += 1;
+                cpu.buysThisTurn[choice.hand] += 1;
+            }
+        }
+
+        function advanceStockTurn() {
+            if (stockTurn >= 10) {
+                // Stock Phase Over -> Start Battle Phase!
+                startBattlePhase();
+            } else {
+                stockTurn++;
+                generatePricesForTurn();
+
+                if (gameMode === 'vs_p2') {
+                    showPassTurnScreen(`TURN ${stockTurn} 開始`, '画面を PLAYER 1 に渡してください。', () => {
+                        showScreen('screen-stock-phase');
+                        updateStockUI(true);
+                    });
+                } else {
+                    updateStockUI(true);
+                }
+            }
+        }
+
+        function showPassTurnScreen(title, desc, callback) {
+            document.getElementById('pass-turn-title').innerText = title;
+            document.getElementById('pass-turn-desc').innerText = desc;
+            pendingPassAction = callback;
+            showScreen('screen-pass-turn');
+        }
+
+        function proceedAfterPass() {
+            playSound('click');
+            if (pendingPassAction) {
+                pendingPassAction();
+                pendingPassAction = null;
+            }
+        }
+
+        /* ===================================================================
+         * STOCK UI & CHART DRAWING
+         * =================================================================== */
+        function updateStockUI(redrawChart = false) {
+            const p = players[activePlayerIndex];
+
+            document.getElementById('stock-turn-badge').innerText = `TURN ${stockTurn} / 10`;
+            document.getElementById('active-player-badge').innerText = `${p.name} の取引`;
+            document.getElementById('stock-player-gold').innerText = `${p.gold} G`;
+
+            // Volatility status
+            const alertElem = document.getElementById('volatility-alert');
+
+            if (stockTurn >= 6) {
+                alertElem.innerText = '⚠️ 変動激化 (1-100G)';
+                alertElem.className = 'animate-pulse text-[11px] font-bold text-red-400 px-2 py-1 bg-red-950/60 rounded border border-red-500/50 whitespace-nowrap';
+            } else {
+                alertElem.innerText = '通常変動 (1-50G)';
+                alertElem.className = 'text-[11px] font-bold text-slate-400 px-2 py-1 bg-slate-950 rounded border border-slate-700 whitespace-nowrap';
+            }
+
+            // Update Stock Cards Info
+            const hands = ['rock', 'scissors', 'paper'];
+            hands.forEach(t => {
+                const priceElem = document.getElementById(`price-${t}`);
+                const diffElem = document.getElementById(`diff-${t}`);
+                const ownedElem = document.getElementById(`owned-${t}`);
+                const boughtElem = document.getElementById(`bought-${t}`);
+
+                const curP = currentPrices[t];
+                priceElem.innerText = `${curP} G`;
+                ownedElem.innerText = p.stocks[t];
+                boughtElem.innerText = `${p.buysThisTurn[t]}/3`;
+
+                if (stockTurn > 1) {
+                    const prevP = prevPrices[t];
+                    const diff = curP - prevP;
+                    if (diff > 0) {
+                        diffElem.innerText = `▲ +${diff}G`;
+                        diffElem.className = 'text-xs font-bold text-red-400';
+                    } else if (diff < 0) {
+                        diffElem.innerText = `▼ ${diff}G`;
+                        diffElem.className = 'text-xs font-bold text-emerald-400';
+                    } else {
+                        diffElem.innerText = `▶ ±0G`;
+                        diffElem.className = 'text-xs font-bold text-slate-400';
+                    }
+                } else {
+                    diffElem.innerText = `NEW`;
+                    diffElem.className = 'text-xs font-bold text-slate-500';
+                }
+            });
+
+            if (redrawChart) renderStockChart();
+        }
+
+        function renderStockChart() {
+            const canvas = document.getElementById('stock-chart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            // Canvasの内部サイズは必要なときだけ更新する。
+            // 毎回書き換えると再レイアウト・再描画が発生するため、取引時は触らない。
+            const w = canvas.parentElement.clientWidth;
+            const h = canvas.parentElement.clientHeight;
+            if (canvas.width !== w) canvas.width = w;
+            if (canvas.height !== h) canvas.height = h;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Draw grid lines
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 1;
+            const gridLines = 4;
+            for (let i = 0; i <= gridLines; i++) {
+                const y = (h / gridLines) * i;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+            }
+
+            if (priceHistory.length === 0) return;
+
+            const maxPriceVal = 100;
+            const stepX = w / 9; // 10 turns = 9 intervals
+
+            const colors = {
+                rock: '#00f3ff',     // Cyan
+                scissors: '#ff007f', // Pink
+                paper: '#ffd700'     // Yellow
+            };
+
+            ['rock', 'scissors', 'paper'].forEach(hand => {
+                ctx.beginPath();
+                ctx.strokeStyle = colors[hand];
+                ctx.lineWidth = 2.5;
+
+                priceHistory.forEach((pt, i) => {
+                    const x = i * stepX;
+                    const y = h - (pt[hand] / maxPriceVal) * (h - 10) - 5;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+
+                // Draw dots
+                priceHistory.forEach((pt, i) => {
+                    const x = i * stepX;
+                    const y = h - (pt[hand] / maxPriceVal) * (h - 10) - 5;
+                    ctx.fillStyle = colors[hand];
+                    ctx.beginPath();
+                    ctx.arc(x, y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            });
+        }
+
+        /* ===================================================================
+         * BATTLE PHASE LOGIC
+         * =================================================================== */
+        function startBattlePhase() {
+            playSound('win');
+            battleRound = 1;
+            players[0].selectedBattleHand = null;
+            players[1].selectedBattleHand = null;
+
+            // 戦闘開始時、2人の6種類の株の最大値でHPを決定する。
+            // 最大値が10以下ならHP30、それ以外ならHP50。
+            const maxStock = Math.max(
+                players[0].stocks.rock,
+                players[0].stocks.scissors,
+                players[0].stocks.paper,
+                players[1].stocks.rock,
+                players[1].stocks.scissors,
+                players[1].stocks.paper
+            );
+            const battleHp = maxStock <= 10 ? 30 : 50;
+
+            players[0].maxHp = battleHp;
+            players[0].hp = battleHp;
+            players[1].maxHp = battleHp;
+            players[1].hp = battleHp;
+
+            showScreen('screen-battle-phase');
+            updateBattleUI();
+            logCombat(`⚔️ 戦闘フェーズ開始！HP ${battleHp}。手を蓄積した数が攻撃力になります。`);
+        }
+
+        function updateBattleUI() {
+            const p1 = players[0];
+            const p2 = players[1];
+
+            // Player 1 HP & Atks
+            document.getElementById('b-p1-name').innerText = p1.name;
+            document.getElementById('b-p1-hp-text').innerText = `HP: ${p1.hp}/${p1.maxHp}`;
+            document.getElementById('b-p1-hp-bar').style.width = `${Math.max(0, (p1.hp / p1.maxHp) * 100)}%`;
+            document.getElementById('b-p1-atk-rock').innerText = p1.stocks.rock;
+            document.getElementById('b-p1-atk-scissors').innerText = p1.stocks.scissors;
+            document.getElementById('b-p1-atk-paper').innerText = p1.stocks.paper;
+
+            // Player 2 HP & Atks
+            document.getElementById('b-p2-name').innerText = p2.name;
+            document.getElementById('b-p2-hp-text').innerText = `HP: ${p2.hp}/${p2.maxHp}`;
+            document.getElementById('b-p2-hp-bar').style.width = `${Math.max(0, (p2.hp / p2.maxHp) * 100)}%`;
+            document.getElementById('b-p2-atk-rock').innerText = p2.stocks.rock;
+            document.getElementById('b-p2-atk-scissors').innerText = p2.stocks.scissors;
+            document.getElementById('b-p2-atk-paper').innerText = p2.stocks.paper;
+
+            document.getElementById('battle-round-title').innerText = `ROUND ${battleRound}`;
+
+            // Buttons attack power reflection
+            const activeP = (gameMode === 'vs_p2' && p1.selectedBattleHand !== null) ? p2 : p1;
+            document.getElementById('btn-atk-rock').innerText = activeP.stocks.rock;
+            document.getElementById('btn-atk-scissors').innerText = activeP.stocks.scissors;
+            document.getElementById('btn-atk-paper').innerText = activeP.stocks.paper;
+
+            const promptElem = document.getElementById('battle-input-prompt');
+            if (gameMode === 'vs_cpu') {
+                promptElem.innerText = `${p1.name}: 出す手を選択してください`;
+            } else {
+                if (p1.selectedBattleHand === null) {
+                    promptElem.innerText = `${p1.name}: 出す手を選択してください`;
+                } else {
+                    promptElem.innerText = `${p2.name}: 出す手を選択してください（シークレット）`;
+                }
+            }
+        }
+
+        function selectBattleHand(hand) {
+            if (isBattleAnimating) return;
+            playSound('click');
+
+            const p1 = players[0];
+            const p2 = players[1];
+
+            if (gameMode === 'vs_cpu') {
+                p1.selectedBattleHand = hand;
+                // CPU picks hand (smart expected value AI)
+                p2.selectedBattleHand = cpuChooseBattleHand();
+                resolveBattleRound();
+            } else {
+                // 2P Mode
+                if (p1.selectedBattleHand === null) {
+                    p1.selectedBattleHand = hand;
+                    showPassTurnScreen('PLAYER 2 の選択', '画面を P2 に渡して手を選択してください。', () => {
+                        showScreen('screen-battle-phase');
+                        updateBattleUI();
+                    });
+                } else {
+                    p2.selectedBattleHand = hand;
+                    resolveBattleRound();
+                }
+            }
+        }
+
+        function cpuChooseBattleHand() {
+            const cpu = players[1];
+            const player = players[0];
+            const hands = ['rock', 'scissors', 'paper'];
+
+            // ============================================================
+            // 1. プレイヤーが各手を選ぶ確率を予測
+            // ============================================================
+
+            const playerHandWeights = {};
+            let totalWeight = 0;
+
+            hands.forEach(hand => {
+                const atk = player.stocks[hand];
+
+                if (atk <= 0) {
+                    // 攻撃力0の手は、基本的には選ばない
+                    playerHandWeights[hand] = 0.01;
+                } else {
+                    // 攻撃力が高い手ほど少し選ばれやすいと予測
+                    playerHandWeights[hand] = Math.pow(atk, 1.5);
+                }
+
+                totalWeight += playerHandWeights[hand];
+            });
+
+            const playerProbs = {};
+
+            hands.forEach(hand => {
+                playerProbs[hand] = playerHandWeights[hand] / totalWeight;
+            });
+
+
+            // ============================================================
+            // 2. CPUが各手を出した場合の期待値を計算
+            // ============================================================
+
+            const cpuScores = {};
+
+            hands.forEach(cpuHand => {
+                const cpuAtk = cpu.stocks[cpuHand];
+
+                // 株を持っていない手は選択不可
+                if (cpuAtk <= 0) {
+                    cpuScores[cpuHand] = -Infinity;
+                    return;
+                }
+
+                let expectedValue = 0;
+
+                hands.forEach(playerHand => {
+                    const probability = playerProbs[playerHand];
+                    const playerAtk = player.stocks[playerHand];
+
+                    let payoff = 0;
+
+                    // ----------------------------------------------------
+                    // CPUのジャンケン勝ち
+                    // ----------------------------------------------------
+                    if (
+                        (cpuHand === 'rock' && playerHand === 'scissors') ||
+                        (cpuHand === 'scissors' && playerHand === 'paper') ||
+                        (cpuHand === 'paper' && playerHand === 'rock')
+                    ) {
+                        payoff += cpuAtk * 2;
+
+                        // この攻撃でプレイヤーを倒せる
+                        if (player.hp - cpuAtk <= 0) {
+                            payoff += 500;
+                        }
+                    }
+
+                    // ----------------------------------------------------
+                    // プレイヤーのジャンケン勝ち
+                    // ----------------------------------------------------
+                    else if (
+                        (playerHand === 'rock' && cpuHand === 'scissors') ||
+                        (playerHand === 'scissors' && cpuHand === 'paper') ||
+                        (playerHand === 'paper' && cpuHand === 'rock')
+                    ) {
+                        payoff -= playerAtk * 2;
+
+                        // この攻撃でCPUが倒される
+                        if (cpu.hp - playerAtk <= 0) {
+                            payoff -= 500;
+                        }
+                    }
+
+                    // ----------------------------------------------------
+                    // あいこ
+                    // ----------------------------------------------------
+                    else {
+                        // 攻撃力が同じ
+                        if (cpuAtk === playerAtk) {
+                            // 実際のゲームと同じく、先攻はランダム。
+                            // 期待値では50%ずつとして計算する。
+
+                            const cpuFirstPayoff =
+                                (cpuAtk * 1.2 - playerAtk);
+
+                            const playerFirstPayoff =
+                                (cpuAtk - playerAtk * 1.2);
+
+                            let equalAttackPayoff =
+                                (cpuFirstPayoff + playerFirstPayoff) / 2;
+
+                            // CPUが先攻して倒せる場合
+                            if (player.hp - cpuAtk <= 0) {
+                                equalAttackPayoff += 250;
+                            }
+
+                            // プレイヤーが先攻してCPUを倒せる場合
+                            if (cpu.hp - playerAtk <= 0) {
+                                equalAttackPayoff -= 250;
+                            }
+
+                            payoff += equalAttackPayoff;
+                        }
+
+                        // CPUの攻撃力の方が低い
+                        // → CPUが先攻
+                        else if (cpuAtk < playerAtk) {
+                            const damageToPlayer = cpuAtk;
+
+                            // CPUの先攻でプレイヤーを倒せる
+                            if (player.hp - damageToPlayer <= 0) {
+                                payoff += 500;
+                            } else {
+                                // プレイヤーが反撃
+                                const damageToCpu = playerAtk;
+
+                                payoff +=
+                                    damageToPlayer -
+                                    damageToCpu * 1.2;
+
+                                // 反撃でCPUが倒される
+                                if (cpu.hp - damageToCpu <= 0) {
+                                    payoff -= 400;
+                                }
+                            }
+                        }
+
+                        // プレイヤーの攻撃力の方が低い
+                        // → プレイヤーが先攻
+                        else {
+                            const damageToCpu = playerAtk;
+
+                            // プレイヤーの先攻でCPUを倒される
+                            if (cpu.hp - damageToCpu <= 0) {
+                                payoff -= 500;
+                            } else {
+                                // CPUが反撃
+                                const damageToPlayer = cpuAtk;
+
+                                payoff +=
+                                    damageToPlayer * 1.2 -
+                                    damageToCpu;
+
+                                // 反撃でプレイヤーが倒される
+                                if (player.hp - damageToPlayer <= 0) {
+                                    payoff += 300;
+                                }
+                            }
+                        }
+                    }
+
+                    expectedValue += probability * payoff;
+                });
+
+                cpuScores[cpuHand] = expectedValue;
+            });
+
+
+            // ============================================================
+            // 3. 実際に選ぶ手を決める
+            // ============================================================
+
+            const validCandidates = hands.filter(hand => cpu.stocks[hand] > 0);
+
+            // 念のため
+            if (validCandidates.length === 0) {
+                return hands[Math.floor(Math.random() * hands.length)];
+            }
+
+            // ------------------------------------------------------------
+            // スコアの高い順に並べる
+            // ------------------------------------------------------------
+
+            validCandidates.sort((a, b) => {
+                return cpuScores[b] - cpuScores[a];
+            });
+
+
+            // ------------------------------------------------------------
+            // 期待値を「選ばれやすさ」に変換
+            //
+            // 1位が必ず選ばれるわけではない。
+            // ただし、1位と大きく差がある手ほど選ばれにくくする。
+            // ------------------------------------------------------------
+
+            const bestScore = cpuScores[validCandidates[0]];
+
+            const candidatesWithWeight = validCandidates.map((hand, index) => {
+                const score = cpuScores[hand];
+
+                // 1位との差
+                const scoreGap = bestScore - score;
+
+                // スコア差が大きいほど確率を下げる
+                let weight = Math.exp(-scoreGap / 100);
+
+                // 1位は少しだけ選ばれやすくする
+                if (index === 0) {
+                    weight *= 1.25;
+                }
+
+                return {
+                    hand: hand,
+                    weight: weight
+                };
+            });
+
+
+            // ------------------------------------------------------------
+            // 重み付きランダム
+            // ------------------------------------------------------------
+
+            const selectionTotalWeight = candidatesWithWeight.reduce(
+                (sum, candidate) => sum + candidate.weight,
+                0
+            );
+
+            let randomValue = Math.random() * selectionTotalWeight;
+
+            for (const candidate of candidatesWithWeight) {
+                randomValue -= candidate.weight;
+
+                if (randomValue <= 0) {
+                    return candidate.hand;
+                }
+            }
+
+            // 念のため
+            return validCandidates[0];
+        }
+
+        /* ===================================================================
+         * BATTLE RESOLUTION ENGINE
+         * =================================================================== */
+        function resolveBattleRound() {
+            isBattleAnimating = true;
+            playSound('janken');
+
+            const p1 = players[0];
+            const p2 = players[1];
+
+            const handSymbols = { rock: '✊', scissors: '✌️', paper: '✋' };
+            const handNames = { rock: 'グー', scissors: 'チョキ', paper: 'パー' };
+
+            const p1Hand = p1.selectedBattleHand;
+            const p2Hand = p2.selectedBattleHand;
+
+            const hDisplay1 = document.getElementById('hand-display-p1');
+            const hDisplay2 = document.getElementById('hand-display-p2');
+            const resultMsg = document.getElementById('battle-result-msg');
+
+            // Reveal Hands Animation
+            hDisplay1.innerText = handSymbols[p1Hand];
+            hDisplay2.innerText = handSymbols[p2Hand];
+
+            // Determine Janken Outcome
+            // Returns: 'p1_win' | 'p2_win' | 'draw'
+            let outcome = 'draw';
+            if (
+                (p1Hand === 'rock' && p2Hand === 'scissors') ||
+                (p1Hand === 'scissors' && p2Hand === 'paper') ||
+                (p1Hand === 'paper' && p2Hand === 'rock')
+            ) {
+                outcome = 'p1_win';
+            } else if (
+                (p2Hand === 'rock' && p1Hand === 'scissors') ||
+                (p2Hand === 'scissors' && p1Hand === 'paper') ||
+                (p2Hand === 'paper' && p1Hand === 'rock')
+            ) {
+                outcome = 'p2_win';
+            }
+
+            setTimeout(() => {
+                if (outcome === 'p1_win') {
+                    // P1 Wins -> P1 Attacks P2
+                    const damage = p1.stocks[p1Hand];
+                    p2.hp = Math.max(0, p2.hp - damage);
+                    resultMsg.innerText = `🎉 ${p1.name} の勝利！ ${damage} ダメージ！`;
+                    logCombat(`[Round ${battleRound}] ${p1.name}(${handNames[p1Hand]}) ➔ WIN! ${p2.name}に ${damage} ダメージ`);
+                    triggerHitEffect('p2-battle-card');
+                } 
+                else if (outcome === 'p2_win') {
+                    // P2 Wins -> P2 Attacks P1
+                    const damage = p2.stocks[p2Hand];
+                    p1.hp = Math.max(0, p1.hp - damage);
+                    resultMsg.innerText = `🎉 ${p2.name} の勝利！ ${damage} ダメージ！`;
+                    logCombat(`[Round ${battleRound}] ${p2.name}(${handNames[p2Hand]}) ➔ WIN! ${p1.name}に ${damage} ダメージ`);
+                    triggerHitEffect('p1-battle-card');
+                } 
+                else {
+                    // DRAW RULE: Low attack power attacks first, then high attack power!
+                    const atk1 = p1.stocks[p1Hand];
+                    const atk2 = p2.stocks[p2Hand];
+
+                    logCombat(`[Round ${battleRound}] あいこ！(${handNames[p1Hand]}) P1攻撃力:${atk1} vs P2攻撃力:${atk2}`);
+
+                    if (atk1 === atk2) {
+                        // 攻撃力が同じ場合はランダムで先攻を決定
+                        const p1First = Math.random() < 0.5;
+
+                        if (p1First) {
+                            // P1が先攻
+                            p2.hp = Math.max(0, p2.hp - atk1);
+                            triggerHitEffect('p2-battle-card');
+
+                            if (p2.hp > 0) {
+                                // P2が反撃
+                                p1.hp = Math.max(0, p1.hp - atk2);
+                                triggerHitEffect('p1-battle-card');
+                                resultMsg.innerText = `⚡ あいこ！攻撃力が同じため、${p1.name} が先攻 → ${p2.name} が反撃！`;
+                            } else {
+                                resultMsg.innerText = `⚡ あいこ！攻撃力が同じため、${p1.name} が先攻で撃破！`;
+                            }
+                        } else {
+                            // P2が先攻
+                            p1.hp = Math.max(0, p1.hp - atk2);
+                            triggerHitEffect('p1-battle-card');
+
+                            if (p1.hp > 0) {
+                                // P1が反撃
+                                p2.hp = Math.max(0, p2.hp - atk1);
+                                triggerHitEffect('p2-battle-card');
+                                resultMsg.innerText = `⚡ あいこ！攻撃力が同じため、${p2.name} が先攻 → ${p1.name} が反撃！`;
+                            } else {
+                                resultMsg.innerText = `⚡ あいこ！攻撃力が同じため、${p2.name} が先攻で撃破！`;
+                            }
+                        }
+                    } else if (atk1 < atk2) {
+                        // P1 attacks first
+                        p2.hp = Math.max(0, p2.hp - atk1);
+                        triggerHitEffect('p2-battle-card');
+                        
+                        if (p2.hp > 0) {
+                            // P2 survives and counters!
+                            p1.hp = Math.max(0, p1.hp - atk2);
+                            triggerHitEffect('p1-battle-card');
+                            resultMsg.innerText = `⚡ あいこ！攻撃力が低い ${p1.name}(${atk1}) から攻撃 ➔ ${p2.name}(${atk2}) の反撃！`;
+                        } else {
+                            resultMsg.innerText = `⚡ あいこ！低攻撃力の ${p1.name}(${atk1}) が先制して撃破！`;
+                        }
+                    } else {
+                        // P2 attacks first
+                        p1.hp = Math.max(0, p1.hp - atk2);
+                        triggerHitEffect('p1-battle-card');
+
+                        if (p1.hp > 0) {
+                            // P1 survives and counters!
+                            p2.hp = Math.max(0, p2.hp - atk1);
+                            triggerHitEffect('p2-battle-card');
+                            resultMsg.innerText = `⚡ あいこ！攻撃力が低い ${p2.name}(${atk2}) から攻撃 ➔ ${p1.name}(${atk1}) の反撃！`;
+                        } else {
+                            resultMsg.innerText = `⚡ あいこ！低攻撃力の ${p2.name}(${atk2}) が先制して撃破！`;
+                        }
+                    }
+                }
+
+                updateBattleUI();
+
+                // Check Win/Loss
+                setTimeout(() => {
+                    if (p1.hp <= 0 || p2.hp <= 0) {
+                        endGame();
+                    } else {
+                        // Prepare Next Round
+                        battleRound++;
+                        p1.selectedBattleHand = null;
+                        p2.selectedBattleHand = null;
+                        isBattleAnimating = false;
+                        
+                        setTimeout(() => {
+                            hDisplay1.innerText = '❓';
+                            hDisplay2.innerText = '❓';
+                            resultMsg.innerText = '手を選択してください';
+                            updateBattleUI();
+                        }, 1200);
+                    }
+                }, 800);
+
+            }, 600);
+        }
+
+        function triggerHitEffect(cardId) {
+            playSound('hit');
+            const card = document.getElementById(cardId);
+            card.classList.add('animate-shake');
+            setTimeout(() => card.classList.remove('animate-shake'), 400);
+        }
+
+        function logCombat(msg) {
+            const logBox = document.getElementById('combat-log');
+            const p = document.createElement('p');
+            p.innerText = msg;
+            logBox.appendChild(p);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        /* ===================================================================
+         * GAME OVER & RESULTS
+         * =================================================================== */
+        function endGame() {
+            playSound('win');
+            const p1 = players[0];
+            const p2 = players[1];
+
+            let winnerText = '';
+            let subtitleText = '';
+
+            if (p1.hp <= 0 && p2.hp <= 0) {
+                winnerText = 'DRAW!';
+                subtitleText = '両者同時に相打ち！引き分けです！';
+            } else if (p1.hp > 0) {
+                winnerText = 'VICTORY!';
+                subtitleText = `🎉 ${p1.name} の勝利！`;
+            } else {
+                winnerText = 'VICTORY!';
+                subtitleText = `🎉 ${p2.name} の勝利！`;
+            }
+
+            document.getElementById('winner-title').innerText = winnerText;
+            document.getElementById('winner-subtitle').innerText = subtitleText;
+
+            document.getElementById('result-round-count').innerText = `${battleRound} ラウンド`;
+            document.getElementById('res-p1-name').innerText = p1.name;
+            document.getElementById('res-p1-hp').innerText = `${p1.hp} / ${p1.maxHp}`;
+            document.getElementById('res-p2-name').innerText = p2.name;
+            document.getElementById('res-p2-hp').innerText = `${p2.hp} / ${p2.maxHp}`;
+
+            showScreen('screen-game-over');
+        }
+
+        function resetToTitle() {
+            playSound('click');
+            showScreen('screen-mode-select');
+        }
+
+        // Window Resize listener for Stock Chart
+        window.addEventListener('resize', () => {
+            if (currentPhase === 'stock' || !document.getElementById('screen-stock-phase').classList.contains('hidden')) {
+                renderStockChart();
+            }
+        });
+    </script>
+</body>
+</html>

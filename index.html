@@ -72,6 +72,53 @@
             animation: shake 0.35s ease-in-out;
         }
 
+        /* スマートフォンの横画面ではグー・チョキ・パーを横一列に固定 */
+        @media (orientation: landscape) {
+            #battle-hand-buttons {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.5rem;
+            }
+            #battle-hand-buttons > button {
+                width: 100%;
+                min-width: 0;
+            }
+        }
+
+        /* スマートフォンの横画面では取引情報を左右に並べる */
+        @media (orientation: landscape) and (max-height: 600px) {
+            #trade-status-bar {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.5rem;
+                padding: 0.4rem 0.6rem;
+            }
+            #trade-status-bar > div {
+                flex: 1 1 0;
+                min-width: 0;
+                gap: 0.35rem;
+            }
+            #trade-status-bar > div:first-child {
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+            #trade-status-bar > div:last-child {
+                justify-content: flex-end;
+                flex-wrap: wrap;
+            }
+            #trade-status-bar #volatility-alert {
+                white-space: normal;
+                text-align: center;
+                padding-left: 0.4rem;
+                padding-right: 0.4rem;
+            }
+            #trade-status-bar #stock-player-gold {
+                font-size: 0.9rem;
+            }
+        }
+
         /* 縦画面では取引情報を2段に分け、重なりを防ぐ */
         @media (max-width: 600px) and (orientation: portrait) {
             #trade-status-bar {
@@ -416,7 +463,7 @@
                         PLAYER 1: 出す手を選択してください
                     </span>
                 </div>
-                <div class="grid grid-cols-3 gap-2">
+                <div id="battle-hand-buttons" class="grid grid-cols-3 gap-2">
                     <!-- ROCK BUTTON -->
                     <button onclick="selectBattleHand('rock')" class="py-2 px-1 rounded-lg bg-slate-900 hover:bg-slate-800 border-2 border-cyan-500/50 hover:border-cyan-400 text-center cyber-btn group">
                         <div class="text-2xl sm:text-3xl group-hover:scale-110 transition-transform">✊</div>

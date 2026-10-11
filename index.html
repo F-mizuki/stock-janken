@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>株式ジャンケン v2 - Stock Janken</title>
+    <title>株式ジャンケン v3 - Stock Janken</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -163,17 +163,18 @@
             }
         }
 
-        /* v2: 戦闘画面のグー・チョキ・パーは画面の向きに関係なく横並び */
+        /* v3: 戦闘画面の手選択ボタンは、画面の向きに関係なく横並び */
         #battle-hand-buttons {
-            display: grid !important;
-            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-            grid-auto-flow: row !important;
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
             gap: 0.5rem !important;
             width: 100% !important;
         }
         #battle-hand-buttons > button {
             display: block !important;
-            width: 100% !important;
+            flex: 1 1 0 !important;
+            width: 0 !important;
             min-width: 0 !important;
         }
 
@@ -190,7 +191,7 @@
                     <h1 class="text-base sm:text-lg font-black font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-pink-500 to-yellow-400">
                         STOCK JANKEN
                     </h1>
-                    <span id="debug-version" class="text-[10px] font-bold text-yellow-300 border border-yellow-400/50 rounded px-1.5 py-0.5">v2</span>
+                    <span id="debug-version" class="text-[10px] font-bold text-yellow-300 border border-yellow-400/50 rounded px-1.5 py-0.5">v3</span>
                 </div>
             </div>
         </div>
@@ -1685,42 +1686,26 @@
     </script>
 
     <script>
-        // v1: Safariを含め、画面の向きが変わるたびに手選択ボタンの並びを直接更新する。
+        // v3: 戦闘画面の手選択ボタンは縦画面・横画面ともに横並びに固定する。
         (function () {
-            function updateScreenShape() {
+            function updateBattleHandButtons() {
                 const buttons = document.getElementById('battle-hand-buttons');
                 if (!buttons) return;
-
-                // Safariでは向き変更直後に寸法更新が遅れる場合があるため、現在の表示領域で判定。
-                const width = document.documentElement.clientWidth || window.innerWidth;
-                const height = document.documentElement.clientHeight || window.innerHeight;
-                const isWide = width >= height;
-
-                document.documentElement.setAttribute('data-screen-shape', isWide ? 'wide' : 'tall');
                 buttons.style.setProperty('display', 'flex', 'important');
-                buttons.style.setProperty('flex-direction', isWide ? 'row' : 'column', 'important');
+                buttons.style.setProperty('flex-direction', 'row', 'important');
                 buttons.style.setProperty('flex-wrap', 'nowrap', 'important');
                 buttons.style.setProperty('width', '100%', 'important');
                 buttons.querySelectorAll('button').forEach(function (button) {
                     button.style.setProperty('flex', '1 1 0', 'important');
                     button.style.setProperty('min-width', '0', 'important');
-                    button.style.setProperty('width', isWide ? '0' : '100%', 'important');
+                    button.style.setProperty('width', '0', 'important');
                 });
             }
-
-            function updateAfterRotation() {
-                updateScreenShape();
-                window.setTimeout(updateScreenShape, 150);
-                window.setTimeout(updateScreenShape, 500);
-            }
-
-            updateAfterRotation();
-            window.addEventListener('resize', updateAfterRotation);
-            window.addEventListener('orientationchange', updateAfterRotation);
-            window.addEventListener('pageshow', updateAfterRotation);
-            if (window.visualViewport) {
-                window.visualViewport.addEventListener('resize', updateAfterRotation);
-            }
+            updateBattleHandButtons();
+            window.addEventListener('DOMContentLoaded', updateBattleHandButtons);
+            window.addEventListener('resize', updateBattleHandButtons);
+            window.addEventListener('orientationchange', updateBattleHandButtons);
+            window.addEventListener('pageshow', updateBattleHandButtons);
         })();
     </script>
 

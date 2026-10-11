@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>株式ジャンケン v6 - Stock Janken</title>
+    <title>株式ジャンケン v7 - Stock Janken</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -60,6 +60,15 @@
         }
         .cyber-btn:active {
             transform: translateY(1px);
+        }
+        /* v7: 2人プレイではタップ後に:hoverが残って選択した手が浮いて見えないようにする */
+        #battle-hand-buttons.two-player-no-hover .cyber-btn:hover,
+        #battle-hand-buttons.two-player-no-hover .cyber-btn:active {
+            transform: none !important;
+            filter: none !important;
+        }
+        #battle-hand-buttons.two-player-no-hover .cyber-btn:focus {
+            outline: none !important;
         }
 
         /* Screen Shake Animation for Battle Hits */
@@ -191,7 +200,7 @@
                     <h1 class="text-base sm:text-lg font-black font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-pink-500 to-yellow-400">
                         STOCK JANKEN
                     </h1>
-                    <span id="debug-version" class="text-[10px] font-bold text-yellow-300 border border-yellow-400/50 rounded px-1.5 py-0.5">v6</span>
+                    <span id="debug-version" class="text-[10px] font-bold text-yellow-300 border border-yellow-400/50 rounded px-1.5 py-0.5">v7</span>
                 </div>
             </div>
         </div>
@@ -734,6 +743,10 @@
         function startGame(mode) {
             playSound('click');
             gameMode = mode;
+            const battleHandButtons = document.getElementById('battle-hand-buttons');
+            if (battleHandButtons) {
+                battleHandButtons.classList.toggle('two-player-no-hover', mode === 'vs_p2');
+            }
             stockTurn = 1;
             activePlayerIndex = 0;
             priceHistory = [];

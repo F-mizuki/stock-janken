@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>株式ジャンケン v12 - Stock Janken</title>
+    <title>株式ジャンケン v13 - Stock Janken</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -221,7 +221,7 @@
                     <h1 class="text-base sm:text-lg font-black font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-pink-500 to-yellow-400">
                         STOCK JANKEN
                     </h1>
-                    <span id="debug-version" class="text-[10px] font-bold text-yellow-300 border border-yellow-400/50 rounded px-1.5 py-0.5">v12</span>
+                    <span id="debug-version" class="text-[10px] font-bold text-yellow-300 border border-yellow-400/50 rounded px-1.5 py-0.5">v13</span>
                 </div>
             </div>
         </div>
@@ -269,35 +269,25 @@
                 <section class="bg-slate-900/70 border border-slate-700 rounded-xl p-4">
                     <h3 class="font-bold text-yellow-300 text-base mb-2">1. ゲームの流れ</h3>
                     <p>１．取引フェーズ（10ターン）：グーチョキパーの株を、安く買い、高く売ることでお金を稼ぎましょう。ただし、10ターンが終わるとお金の価値はなくなるので、終わるまでに、グーチョキパーの株を買い切りましょう。</p>
-                    <p class="mt-2">２．戦闘フェーズ：集めた株はそのままグーチョキパーの攻撃力になります。勝てばその分のダメージを相手に与え、あいこの場合、攻撃力が低いほうから順に攻撃します。※株≠出せる数。０でも出せます。</p>
+                    <p class="mt-2">２．戦闘フェーズ：集めた株はそのままグーチョキパーの攻撃力になります。ジャンケンで勝てば、その手の攻撃力のダメージを相手に与え、あいこの場合、攻撃力が低いほうから順に攻撃します。※株≠出せる数。０でも出せます。</p>
                 </section>
 
                 <section class="bg-slate-900/70 border border-slate-700 rounded-xl p-4">
-                    <h3 class="font-bold text-yellow-300 text-base mb-2">2. 株取引フェーズ</h3>
+                    <h3 class="font-bold text-yellow-300 text-base mb-2">2. 具体的な数値</h3>
+                    <p class="font-bold text-cyan-300 mb-1">１．取引フェーズ</p>
+                    <ul class="list-disc pl-5 space-y-1 mb-3">
+                        <li>各ターン、各種類の株は最大で3個までしか買えません。売る上限はありません。10ターンでお金を使い切るために、後半は売りすぎないようにしましょう。</li>
+                        <li>株価は、1〜5ターン目は1〜50G、6〜10ターン目は1〜100Gで変動します。</li>
+                    </ul>
+                    <p class="font-bold text-pink-300 mb-1">２．戦闘フェーズ</p>
                     <ul class="list-disc pl-5 space-y-1">
-                        <li>グー・チョキ・パーの3種類の株があります。</li>
-                        <li>各ターン、各種類の株は最大3個まで購入できます。購入上限はターンごとにリセットされます。</li>
-                        <li>売却できる数に上限はありません。売却すると、その時点の株価に応じたGを受け取ります。</li>
-                        <li>株価はターンごとに変動します。1〜5ターン目は1〜50G、6〜10ターン目は1〜100Gの範囲です。</li>
-                        <li>株価のグラフを参考にしながら、どの株を買うか、いつ売るかを考えましょう。</li>
-                        <li>各プレイヤーが取引を確定すると、次のターンへ進みます。</li>
+                        <li>プレイヤーのHPは、いずれかの手の攻撃力が11以上なら50になります。二人とも10以下の攻撃力しか持っていない場合、30になります。</li>
+                        <li>ジャンケンであいこの場合、攻撃力が低いほうから順に攻撃しますが、攻撃力も同じだった場合、ランダムな順番で攻撃します。このあいこの順番は、お互いに瀕死のときに重要になります。普段はどちらも食らうだけです。</li>
                     </ul>
                 </section>
 
                 <section class="bg-slate-900/70 border border-slate-700 rounded-xl p-4">
-                    <h3 class="font-bold text-yellow-300 text-base mb-2">3. 戦闘フェーズ</h3>
-                    <ul class="list-disc pl-5 space-y-1">
-                        <li>グー・チョキ・パーそれぞれの所持数が、その手の攻撃力になります。</li>
-                        <li>両プレイヤーが出す手を選ぶと、ジャンケンの勝敗に応じて攻撃します。</li>
-                        <li>勝った手が攻撃し、相手のHPを攻撃力分減らします。</li>
-                        <li>あいこの場合は、攻撃力が低い側から攻撃します。攻撃力が同じ場合は、ランダムに先攻を決めます。</li>
-                        <li>先攻の攻撃で相手を倒した場合、相手は反撃できません。先攻で倒しきれなければ、反撃します。</li>
-                        <li>戦闘開始時のHPは、両プレイヤーが持つ株のうち最大の所持数で決まります。最大所持数が10以下ならHP30、11以上ならHP50です。</li>
-                    </ul>
-                </section>
-
-                <section class="bg-slate-900/70 border border-slate-700 rounded-xl p-4">
-                    <h3 class="font-bold text-yellow-300 text-base mb-2">4. プレイモード</h3>
+                    <h3 class="font-bold text-yellow-300 text-base mb-2">3. プレイモード</h3>
                     <ul class="list-disc pl-5 space-y-1">
                         <li><span class="font-bold text-cyan-300">1人プレイ：</span>CPUと対戦します。</li>
                         <li><span class="font-bold text-pink-300">2人プレイ：</span>1台の端末を交代で操作する対戦です。通信対戦ではありません。</li>

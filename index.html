@@ -188,6 +188,31 @@
             width: 0 !important;
         }
 
+    
+        /* Safari対策：画面比のCSS判定を最後に適用し、先行する縦並び指定を上書き */
+        @media (min-aspect-ratio: 1/1) {
+            #battle-hand-buttons {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                align-items: stretch !important;
+            }
+            #battle-hand-buttons > button {
+                flex: 1 1 0 !important;
+                width: 0 !important;
+                min-width: 0 !important;
+            }
+        }
+        @media (max-aspect-ratio: 1/1) {
+            #battle-hand-buttons {
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            #battle-hand-buttons > button {
+                width: 100% !important;
+            }
+        }
+
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-1.5 sm:p-3">

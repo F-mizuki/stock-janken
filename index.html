@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>株式ジャンケン v3 - Stock Janken</title>
+    <title>株式ジャンケン v4 - Stock Janken</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -163,7 +163,7 @@
             }
         }
 
-        /* v3: 戦闘画面の手選択ボタンは、画面の向きに関係なく横並び */
+        /* v4: 戦闘画面の手選択ボタンは、画面の向きに関係なく横並び */
         #battle-hand-buttons {
             display: flex !important;
             flex-direction: row !important;
@@ -1157,6 +1157,7 @@
 
             showScreen('screen-battle-phase');
             updateBattleUI();
+            setBattleInputEnabled(true);
             logCombat(`⚔️ 戦闘フェーズ開始！HP ${battleHp}。手を蓄積した数が攻撃力になります。`);
         }
 
@@ -1200,8 +1201,17 @@
             }
         }
 
+        function setBattleInputEnabled(enabled) {
+            const buttons = document.querySelectorAll('#battle-hand-buttons button');
+            buttons.forEach(button => {
+                button.disabled = !enabled;
+                button.style.opacity = enabled ? '' : '0.55';
+                button.style.cursor = enabled ? '' : 'not-allowed';
+            });
+        }
+
         function selectBattleHand(hand) {
-            if (isBattleAnimating) return;
+            if (isBattleAnimating || currentPhase !== 'battle') return;
             playSound('click');
 
             const p1 = players[0];
@@ -1219,6 +1229,7 @@
                     showPassTurnScreen('PLAYER 2 の選択', '画面を P2 に渡して手を選択してください。', () => {
                         showScreen('screen-battle-phase');
                         updateBattleUI();
+                        setBattleInputEnabled(!isBattleAnimating);
                     });
                 } else {
                     p2.selectedBattleHand = hand;
@@ -1477,7 +1488,10 @@
          * BATTLE RESOLUTION ENGINE
          * =================================================================== */
         function resolveBattleRound() {
+            // 1ラウンドの処理中は二重入力を受け付けない
+            if (isBattleAnimating) return;
             isBattleAnimating = true;
+            setBattleInputEnabled(false);
             playSound('janken');
 
             const p1 = players[0];
@@ -1616,6 +1630,7 @@
                             hDisplay2.innerText = '❓';
                             resultMsg.innerText = '手を選択してください';
                             updateBattleUI();
+                            setBattleInputEnabled(true);
                         }, 1200);
                     }
                 }, 800);
@@ -1668,6 +1683,7 @@
             document.getElementById('res-p1-hp').innerText = `${p1.hp} / ${p1.maxHp}`;
             document.getElementById('res-p2-name').innerText = p2.name;
             document.getElementById('res-p2-hp').innerText = `${p2.hp} / ${p2.maxHp}`;
+            setBattleInputEnabled(false);
 
             showScreen('screen-game-over');
         }
@@ -1686,7 +1702,7 @@
     </script>
 
     <script>
-        // v3: 戦闘画面の手選択ボタンは縦画面・横画面ともに横並びに固定する。
+        // v4: 戦闘画面の手選択ボタンは縦画面・横画面ともに横並びに固定する。
         (function () {
             function updateBattleHandButtons() {
                 const buttons = document.getElementById('battle-hand-buttons');

@@ -240,7 +240,7 @@
             <div class="mb-5">
                 <span class="text-5xl inline-block mb-2 animate-bounce">✊✌️✋</span>
                 <h2 class="text-2xl font-black font-orbitron text-cyan-400 mb-1">STOCK JANKEN</h2>
-
+                <p class="text-slate-400 text-xs mt-2">所要時間：1人プレイ 2〜5分 ／ 2人プレイ 10〜12分</p>
             </div>
 
             <div class="space-y-3">
@@ -271,13 +271,14 @@
                 <section class="bg-slate-900/70 border border-slate-700 rounded-xl p-4">
                     <h3 class="font-bold text-yellow-300 text-base mb-2">1. ゲームの流れ</h3>
                     <p>１．取引フェーズ（10ターン）：グーチョキパーの株を、安く買い、高く売ることでお金を稼ぎましょう。ただし、10ターンが終わるとお金の価値はなくなるので、終わるまでに、グーチョキパーの株を買い切りましょう。</p>
-                    <p class="mt-2">２．戦闘フェーズ：集めた株はそのままグーチョキパーの攻撃力になります。ジャンケンで勝てば、その手の攻撃力のダメージを相手に与え、あいこの場合、攻撃力が低いほうから順に攻撃します。※株≠出せる数。０でも出せます。出したから数が減る、ということもありません。</p>
+                    <p class="mt-2">２．戦闘フェーズ：集めた株はそのままグーチョキパーの攻撃力になります。ジャンケンで勝てば、その手の攻撃力のダメージを相手に与え、あいこの場合、攻撃力が低いほうから順に攻撃します。先に相手のHPをなくしたほうの勝利となります。※株≠出せる数。０でも出せます。出したから数が減る、ということもありません。</p>
                 </section>
 
                 <section class="bg-slate-900/70 border border-slate-700 rounded-xl p-4">
                     <h3 class="font-bold text-yellow-300 text-base mb-2">2. 具体的な数値</h3>
                     <p class="font-bold text-cyan-300 mb-1">１．取引フェーズ</p>
                     <ul class="list-disc pl-5 space-y-1 mb-3">
+                        <li>所持金は100Gからです。</li>
                         <li>各ターン、各種類の株は最大で3個までしか買えません。売る上限はありません。10ターンでお金を使い切るために、後半は売りすぎないようにしましょう。</li>
                         <li>株価は、1〜5ターン目は1〜50G、6〜10ターン目は1〜100Gで変動します。</li>
                     </ul>
@@ -308,7 +309,6 @@
             <div class="text-center mb-5">
                 <span class="text-4xl inline-block mb-2">✍️</span>
                 <h2 class="text-2xl font-black font-orbitron text-cyan-400">作者から</h2>
-                <p class="text-slate-400 text-xs mt-1">作者からのメッセージ</p>
             </div>
 
             <div class="max-h-[60vh] overflow-y-auto pr-1 space-y-4 text-sm text-slate-300 leading-relaxed">
@@ -327,7 +327,8 @@
         <section id="screen-pass-turn" class="hidden cyber-card p-6 text-center max-w-md mx-auto w-full neon-border-yellow my-auto">
             <div class="text-4xl mb-3">📱 ➔ 👤</div>
             <h2 id="pass-turn-title" class="text-xl font-black text-yellow-400 mb-1">PLAYER 2 の順番です</h2>
-            <p id="pass-turn-desc" class="text-slate-300 text-xs mb-5">画面を他プレイヤーに見られないように交代してください。</p>
+            <p id="pass-turn-desc" class="text-slate-300 text-xs mb-2">画面を他プレイヤーに見られないように交代してください。</p>
+            <p id="pass-turn-last-warning" class="hidden text-red-400 font-black text-sm mb-5 animate-pulse">ラストターン！お金を使い切れ！</p>
             <button onclick="proceedAfterPass()" class="w-full py-3 px-5 rounded-xl font-bold text-base bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-slate-950 cyber-btn shadow-lg shadow-yellow-500/20">
                 準備完了（画面を表示）
             </button>
@@ -479,7 +480,36 @@
             </div>
         </section>
 
-        <!-- 4. BATTLE PHASE SCREEN (Compact Layout) -->
+        <!-- 4. TWO-PLAYER TRADE RESULTS SCREEN -->
+        <section id="screen-trade-results" class="hidden cyber-card p-5 sm:p-7 max-w-2xl mx-auto w-full neon-border-yellow my-auto shadow-2xl">
+            <div class="text-center mb-5">
+                <span class="text-4xl inline-block mb-2">📊</span>
+                <h2 class="text-2xl font-black font-orbitron text-yellow-300">取引結果</h2>
+                <p class="text-slate-400 text-xs mt-1">10ターン終了！集めた株が攻撃力になります。</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="bg-slate-900/80 border border-cyan-500/40 rounded-xl p-3">
+                    <h3 class="font-bold text-cyan-300 mb-2">PLAYER 1</h3>
+                    <p class="text-xs text-slate-400 mb-1">✊ グー攻撃力</p><p id="result-p1-rock" class="text-xl font-black text-white mb-2">0</p>
+                    <p class="text-xs text-slate-400 mb-1">✌️ チョキ攻撃力</p><p id="result-p1-scissors" class="text-xl font-black text-white mb-2">0</p>
+                    <p class="text-xs text-slate-400 mb-1">✋ パー攻撃力</p><p id="result-p1-paper" class="text-xl font-black text-white">0</p>
+                </div>
+                <div class="bg-slate-900/80 border border-pink-500/40 rounded-xl p-3">
+                    <h3 class="font-bold text-pink-300 mb-2">PLAYER 2</h3>
+                    <p class="text-xs text-slate-400 mb-1">✊ グー攻撃力</p><p id="result-p2-rock" class="text-xl font-black text-white mb-2">0</p>
+                    <p class="text-xs text-slate-400 mb-1">✌️ チョキ攻撃力</p><p id="result-p2-scissors" class="text-xl font-black text-white mb-2">0</p>
+                    <p class="text-xs text-slate-400 mb-1">✋ パー攻撃力</p><p id="result-p2-paper" class="text-xl font-black text-white">0</p>
+                </div>
+            </div>
+            <div class="text-center bg-slate-950/70 border border-slate-700 rounded-xl p-3 mb-4">
+                <p class="text-xs text-slate-400">戦闘開始時のHP</p>
+                <p class="text-2xl font-black text-yellow-300"><span id="result-battle-hp">50</span> HP</p>
+                <p id="result-hp-reason" class="text-xs text-slate-400 mt-1">攻撃力の条件によって決まります。</p>
+            </div>
+            <button onclick="startBattlePhase()" class="w-full py-3 px-5 rounded-xl font-bold text-base bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white shadow-lg cyber-btn">戦闘開始</button>
+        </section>
+
+        <!-- 5. BATTLE PHASE SCREEN (Compact Layout) -->
         <section id="screen-battle-phase" class="hidden flex-1 flex flex-col justify-between gap-2">
             
             <!-- Health Bars & Status Arena -->
@@ -781,7 +811,7 @@
          * GAME STATE MANAGEMENT
          * =================================================================== */
         let gameMode = 'vs_cpu'; // 'vs_cpu' | 'vs_p2'
-        let currentPhase = 'mode_select'; // 'mode_select' | 'stock' | 'pass_turn' | 'battle' | 'game_over'
+        let currentPhase = 'mode_select'; // 'mode_select' | 'stock' | 'pass_turn' | 'trade_results' | 'battle' | 'game_over'
         
         let stockTurn = 1; // 1 to 10
         let activePlayerIndex = 0; // 0 for P1, 1 for P2
@@ -873,7 +903,7 @@
         }
 
         function showScreen(screenId) {
-            const screens = ['screen-mode-select', 'screen-rules', 'screen-author', 'screen-pass-turn', 'screen-stock-phase', 'screen-battle-phase', 'screen-game-over'];
+            const screens = ['screen-mode-select', 'screen-rules', 'screen-author', 'screen-pass-turn', 'screen-stock-phase', 'screen-trade-results', 'screen-battle-phase', 'screen-game-over'];
             screens.forEach(s => {
                 document.getElementById(s).classList.add('hidden');
             });
@@ -982,7 +1012,11 @@
                     });
                 } else {
                     activePlayerIndex = 0;
-                    advanceStockTurn();
+                    if (stockTurn >= 10) {
+                        showTradeResults();
+                    } else {
+                        advanceStockTurn();
+                    }
                 }
             }
         }
@@ -1095,6 +1129,9 @@
         function showPassTurnScreen(title, desc, callback) {
             document.getElementById('pass-turn-title').innerText = title;
             document.getElementById('pass-turn-desc').innerText = desc;
+            const lastTurnWarning = document.getElementById('pass-turn-last-warning');
+            const isTurnTenNotice = gameMode === 'vs_p2' && stockTurn === 10 && title.includes('TURN 10');
+            lastTurnWarning.classList.toggle('hidden', !isTurnTenNotice);
             pendingPassAction = callback;
             showScreen('screen-pass-turn');
         }
@@ -1228,6 +1265,26 @@
         /* ===================================================================
          * BATTLE PHASE LOGIC
          * =================================================================== */
+        function showTradeResults() {
+            currentPhase = 'trade_results';
+            const p1 = players[0];
+            const p2 = players[1];
+            ['rock', 'scissors', 'paper'].forEach(hand => {
+                document.getElementById(`result-p1-${hand}`).innerText = p1.stocks[hand];
+                document.getElementById(`result-p2-${hand}`).innerText = p2.stocks[hand];
+            });
+            const maxStock = Math.max(
+                p1.stocks.rock, p1.stocks.scissors, p1.stocks.paper,
+                p2.stocks.rock, p2.stocks.scissors, p2.stocks.paper
+            );
+            const battleHp = maxStock <= 10 ? 30 : 50;
+            document.getElementById('result-battle-hp').innerText = battleHp;
+            document.getElementById('result-hp-reason').innerText = maxStock <= 10
+                ? '6種類すべての攻撃力が10以下のため、HPは30です。'
+                : 'どれかの攻撃力が11以上のため、HPは50です。';
+            showScreen('screen-trade-results');
+        }
+
         function startBattlePhase() {
             currentPhase = 'battle';
             isBattleAnimating = false;

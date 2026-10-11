@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>株式ジャンケン v1 - Stock Janken</title>
+    <title>株式ジャンケン v2 - Stock Janken</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -70,22 +70,6 @@
         }
         .animate-shake {
             animation: shake 0.35s ease-in-out;
-        }
-
-        /* 画面の幅が高さ以上なら、グー・チョキ・パーを横一列にする */
-        @media (min-aspect-ratio: 1/1) {
-            #battle-hand-buttons {
-                display: grid !important;
-                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-                grid-auto-flow: column;
-                gap: 0.5rem;
-                width: 100%;
-            }
-            #battle-hand-buttons > button {
-                display: block;
-                width: 100%;
-                min-width: 0;
-            }
         }
 
         /* 画面が横長で高さ600px以下なら、取引情報を左右に並べる */
@@ -168,49 +152,29 @@
             border-radius: 2px;
         }
     
-        /* 画面比で手選択ボタンの並びを決定する。横長は横一列、縦長は縦並び */
+        /* v2: 売買画面の株カードは縦画面で縦並び、横画面で横並び */
+        #stock-trading-cards {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) !important;
+        }
+        @media (orientation: landscape) {
+            #stock-trading-cards {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            }
+        }
+
+        /* v2: 戦闘画面のグー・チョキ・パーは画面の向きに関係なく横並び */
         #battle-hand-buttons {
-            display: flex !important;
-            flex-direction: column !important;
+            display: grid !important;
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            grid-auto-flow: row !important;
             gap: 0.5rem !important;
-            width: 100%;
+            width: 100% !important;
         }
         #battle-hand-buttons > button {
             display: block !important;
-            flex: 1 1 0 !important;
             width: 100% !important;
             min-width: 0 !important;
-        }
-        html[data-screen-shape="wide"] #battle-hand-buttons {
-            flex-direction: row !important;
-        }
-        html[data-screen-shape="wide"] #battle-hand-buttons > button {
-            width: 0 !important;
-        }
-
-    
-        /* Safari対策：画面比のCSS判定を最後に適用し、先行する縦並び指定を上書き */
-        @media (min-aspect-ratio: 1/1) {
-            #battle-hand-buttons {
-                display: flex !important;
-                flex-direction: row !important;
-                flex-wrap: nowrap !important;
-                align-items: stretch !important;
-            }
-            #battle-hand-buttons > button {
-                flex: 1 1 0 !important;
-                width: 0 !important;
-                min-width: 0 !important;
-            }
-        }
-        @media (max-aspect-ratio: 1/1) {
-            #battle-hand-buttons {
-                display: flex !important;
-                flex-direction: column !important;
-            }
-            #battle-hand-buttons > button {
-                width: 100% !important;
-            }
         }
 
     </style>
@@ -226,7 +190,7 @@
                     <h1 class="text-base sm:text-lg font-black font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-pink-500 to-yellow-400">
                         STOCK JANKEN
                     </h1>
-                    <span id="debug-version" class="text-[10px] font-bold text-yellow-300 border border-yellow-400/50 rounded px-1.5 py-0.5">v1</span>
+                    <span id="debug-version" class="text-[10px] font-bold text-yellow-300 border border-yellow-400/50 rounded px-1.5 py-0.5">v2</span>
                 </div>
             </div>
         </div>
@@ -299,7 +263,7 @@
             </div>
 
             <!-- Stock Trading Cards (Compact Grid) -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+            <div id="stock-trading-cards" class="grid grid-cols-1 gap-2">
                 
                 <!-- ROCK CARD -->
                 <div class="cyber-card p-2.5 border border-cyan-500/30 flex flex-col justify-between">

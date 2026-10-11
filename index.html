@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>株式ジャンケン v7 - Stock Janken</title>
+    <title>株式ジャンケン v8 - Stock Janken</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -61,14 +61,35 @@
         .cyber-btn:active {
             transform: translateY(1px);
         }
-        /* v7: 2人プレイではタップ後に:hoverが残って選択した手が浮いて見えないようにする */
-        #battle-hand-buttons.two-player-no-hover .cyber-btn:hover,
-        #battle-hand-buttons.two-player-no-hover .cyber-btn:active {
+        /* v8: 2人プレイでは選択した手がホバー・発光で推測されないようにする */
+        #battle-hand-buttons.two-player-no-hover > button,
+        #battle-hand-buttons.two-player-no-hover > button:hover,
+        #battle-hand-buttons.two-player-no-hover > button:active,
+        #battle-hand-buttons.two-player-no-hover > button:focus,
+        #battle-hand-buttons.two-player-no-hover > button:focus-visible {
             transform: none !important;
             filter: none !important;
-        }
-        #battle-hand-buttons.two-player-no-hover .cyber-btn:focus {
+            box-shadow: none !important;
             outline: none !important;
+            background-color: rgb(15 23 42) !important;
+        }
+        #battle-hand-buttons.two-player-no-hover > button:nth-child(1):hover,
+        #battle-hand-buttons.two-player-no-hover > button:nth-child(1):active,
+        #battle-hand-buttons.two-player-no-hover > button:nth-child(1):focus,
+        #battle-hand-buttons.two-player-no-hover > button:nth-child(1):focus-visible {
+            border-color: rgb(6 182 212 / 0.5) !important;
+        }
+        #battle-hand-buttons.two-player-no-hover > button:nth-child(2):hover,
+        #battle-hand-buttons.two-player-no-hover > button:nth-child(2):active,
+        #battle-hand-buttons.two-player-no-hover > button:nth-child(2):focus,
+        #battle-hand-buttons.two-player-no-hover > button:nth-child(2):focus-visible {
+            border-color: rgb(236 72 153 / 0.5) !important;
+        }
+        #battle-hand-buttons.two-player-no-hover > button:nth-child(3):hover,
+        #battle-hand-buttons.two-player-no-hover > button:nth-child(3):active,
+        #battle-hand-buttons.two-player-no-hover > button:nth-child(3):focus,
+        #battle-hand-buttons.two-player-no-hover > button:nth-child(3):focus-visible {
+            border-color: rgb(234 179 8 / 0.5) !important;
         }
 
         /* Screen Shake Animation for Battle Hits */
@@ -200,7 +221,7 @@
                     <h1 class="text-base sm:text-lg font-black font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-pink-500 to-yellow-400">
                         STOCK JANKEN
                     </h1>
-                    <span id="debug-version" class="text-[10px] font-bold text-yellow-300 border border-yellow-400/50 rounded px-1.5 py-0.5">v7</span>
+                    <span id="debug-version" class="text-[10px] font-bold text-yellow-300 border border-yellow-400/50 rounded px-1.5 py-0.5">v8</span>
                 </div>
             </div>
         </div>
@@ -1738,7 +1759,7 @@
     </script>
 
     <script>
-        // v6: 戦闘画面の手選択ボタンは縦画面・横画面ともに横並びに固定する。
+        // v8: 戦闘画面の手選択ボタンは縦画面・横画面ともに横並びに固定する。
         (function () {
             function updateBattleHandButtons() {
                 const buttons = document.getElementById('battle-hand-buttons');
